@@ -60,7 +60,7 @@ from util.mptbot import HuggingFacePipelineLocal,TGILocalPipeline
 # COMMAND ----------
 
 # DBTITLE 1,Specify Question
-question =   """ What is the name of policy holder?"""
+question =   """ Anthropomorphism and the scope of their power?"""
 
 # COMMAND ----------
 

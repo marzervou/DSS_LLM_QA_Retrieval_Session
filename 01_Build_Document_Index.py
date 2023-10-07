@@ -141,6 +141,7 @@ for chunk in text_splitter.split_text(long_text):
 # COMMAND ----------
 
 # DBTITLE 1,Chunking Configurations
+# DBTITLE 1,Chunking Configurations
 chunk_size = 512
 chunk_overlap = 50
 
@@ -236,17 +237,6 @@ vector_store.save_local(folder_path=config['vector_store_path'])
 # COMMAND ----------
 
 dbutils.notebook.exit("exit")
-
-# COMMAND ----------
-
-# MAGIC %md © 2023 Databricks, Inc. All rights reserved. The source in this notebook is provided subject to the Databricks License. All included or referenced third party libraries are subject to the licenses set forth below.
-# MAGIC
-# MAGIC | library                                | description             | license    | source                                              |
-# MAGIC |----------------------------------------|-------------------------|------------|-----------------------------------------------------|
-# MAGIC | langchain | Building applications with LLMs through composability | MIT  |   https://pypi.org/project/langchain/ |
-# MAGIC | tiktoken | Fast BPE tokeniser for use with OpenAI's models | MIT  |   https://pypi.org/project/tiktoken/ |
-# MAGIC | faiss-cpu | Library for efficient similarity search and clustering of dense vectors | MIT  |   https://pypi.org/project/faiss-cpu/ |
-# MAGIC | openai | Building applications with LLMs through composability | MIT  |   https://pypi.org/project/openai/ |
 
 # COMMAND ----------
 

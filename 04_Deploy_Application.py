@@ -1,6 +1,7 @@
 # Databricks notebook source
 # DBTITLE 1,Install Gradio Dependencies
-# MAGIC %pip install Jinja2==3.0.3 fastapi==0.100.0 uvicorn nest_asyncio databricks-cli gradio==3.37.0 nest_asyncio
+# MAGIC  %pip install Jinja2==3.0.3 fastapi==0.100.0 uvicorn nest_asyncio databricks-cli gradio==3.37.0 nest_asyncio
+# MAGIC
 
 # COMMAND ----------
 
@@ -62,6 +63,10 @@ def load_vector_db(embeddings_model = 'intfloat/e5-large-v2',
 
 # COMMAND ----------
 
+config['vector_store_path']
+
+# COMMAND ----------
+
 # Retrieve the vector database:
 retriever = load_vector_db(config['embedding_model'],
                            config,
@@ -102,7 +107,7 @@ with gr.Blocks() as demo:
     with gr.Row():
         gr.Markdown(
         f"""
-        # Policy Retrieval QA using {config['model_id']}
+        # Let's find what you need!
         The current version FAISS vector store to Fetch the most relevant paragraph's to create the bot
         """)
     with gr.Row():
@@ -114,7 +119,7 @@ with gr.Blocks() as demo:
             raw_text = gr.Textbox(label="Document from which the answer was generated",scale=50)
             raw_source = gr.Textbox(label="Source of the Document",scale=1)
     with gr.Row():
-      examples = gr.Examples(examples=["what is limit of the misfueling cost covered in the policy?", "what happens if I lose my keys?","what is the duration for the policy bought by the policy holder mentioned in the policy schedule / Validation schedule","What is the maximum Age of a Vehicle the insurance covers?"],
+      examples = gr.Examples(examples=["What are the links between politics and religion?", "what is a sanctuary?","What was Socrates accused of?","What is the libration of liquids?","To what extent was upholding the worship of traditional civic gods impor- tant for the Athenians?","Where was seisachtheia mentioned?"],
                         inputs=[msg])
     msg.submit(respond, [msg, chatbot], [msg, chatbot,raw_text,raw_source])
 

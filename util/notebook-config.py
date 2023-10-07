@@ -9,7 +9,7 @@ if 'config' not in locals():
 # COMMAND ----------
 
 # DBTITLE 1,Use Case
-config['use-case']="insurance_qa_bot"
+config['use-case']="qabot_school"
 
 # COMMAND ----------
 
@@ -19,12 +19,12 @@ config['use-case']="insurance_qa_bot"
 config['model_id'] = 'meta-llama/Llama-2-13b-chat-hf'
 # config['model_id'] = 'mosaicml/mpt-30b-chat'
 username = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().apply('user')
-config['use_azure_formrecognizer'] = True
+config['use_azure_formrecognizer'] = False
 
 # COMMAND ----------
 
 # DBTITLE 1,Create database
-config['database_name'] = 'qabot'
+config['database_name'] = 'qabot_school'
 
 # create database if not exists
 _ = spark.sql(f"create database if not exists {config['database_name']}")
@@ -41,12 +41,12 @@ if config['model_id'] == 'openai':
   os.environ['OPENAI_API_KEY'] = 'XXXXXXXXx'
 
 if "Llama-2" in config['model_id']:
-  config['HUGGING_FACE_HUB_TOKEN'] = 'XXXXXXXXX'
+  config['HUGGING_FACE_HUB_TOKEN'] = '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'
 
 # COMMAND ----------
 
 # DBTITLE 1,Set document path
-config['loc'] = f"/dbfs/FileStore/insurance_policy_doc/"
+config['loc'] = f"/dbfs/FileStore/mzervou/raw_data"
 config['vector_store_path'] = f"/dbfs/{username}/qabot/vector_store/{config['model_id']}/{config['use-case']}" # /dbfs/... is a local file system representation
 
 # COMMAND ----------

@@ -17,7 +17,6 @@ class QABot():
     ''' check if answer is a valid '''
 
     result = True # default response
-
     badanswer_phrases = [ # phrases that indicate model produced non-answer
       "no information", "no context", "don't know", "no clear answer", "sorry","not mentioned","do not know","i don't see any information","i cannot provide information",
       "no answer", "no mention","not mentioned","not mention", "context does not provide", "no helpful answer", "not specified","not know the answer", 
