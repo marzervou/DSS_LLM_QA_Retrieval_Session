@@ -1,0 +1,40 @@
+# Databricks notebook source
+import requests
+import json
+
+def request_llamav2_13b(question):
+    token = "XXXXXXXXXXXXXXXXXXX"
+    url = 'https://adb-984752964297111.11.azuredatabricks.net/driver-proxy-api/o/0/0918-192555-elmkeq9x/7777'
+    
+    headers = {
+        "Content-Type": "application/json",
+        "Authentication": f"Bearer {token}"
+        }
+    
+    data = {
+     "prompt": question
+     }
+    
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    return response.text
+
+# COMMAND ----------
+
+import json
+
+json.loads(request_llamav2_13b("what happens if I lose my keys"))
+
+
+# COMMAND ----------
+
+# what is limit of the misfueling cost covered in the policy?
+# what is the name of policy holder?
+# what is the duration for the policy?
+# what is the duration for the policy bought by the policy holder mentioned in the policy schedule / Validation schedule?
+# "what is the vehicle age covered by the policy?"
+# "what are the regions covered by the policy?"
+# what happens if I lose my keys?
+
+# COMMAND ----------
+
+

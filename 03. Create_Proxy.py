@@ -11,6 +11,10 @@ dbutils.library.restartPython()
 
 # COMMAND ----------
 
+!pip install text_generation
+
+# COMMAND ----------
+
 # MAGIC %run ./util/notebook-config
 
 # COMMAND ----------
@@ -26,7 +30,7 @@ from langchain.prompts.base import BasePromptTemplate
 from langchain.prompts import PromptTemplate
 
 from util.embeddings import load_vector_db
-from util.mptbot import HuggingFacePipelineLocal, TGILocalPipeline
+from util.mptbot import TGILocalPipeline
 from util.qabot import *
 from langchain.chat_models import ChatOpenAI
 
@@ -36,12 +40,6 @@ from langchain import LLMChain
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.embeddings import HuggingFaceEmbeddings,HuggingFaceInstructEmbeddings
 from langchain.vectorstores.faiss import FAISS
-
-# COMMAND ----------
-
-# from huggingface_hub import login
-# access_token_read = dbutils.secrets.get(scope="hugging_phase", key="llama")
-# login(token = access_token_read)
 
 # COMMAND ----------
 
@@ -70,12 +68,6 @@ retriever = load_vector_db(config['embedding_model'],
 
 # COMMAND ----------
 
-# from huggingface_hub import login
-# access_token_read = dbutils.secrets.get(scope="hugging_phase", key="llama")
-# login(token = access_token_read)
-
-# COMMAND ----------
-
 # define system-level instructions
 system_message_prompt = SystemMessagePromptTemplate.from_template(config['template'])
 chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt])
@@ -98,31 +90,43 @@ x
 # COMMAND ----------
 
 import json
+from transformers import AutoTokenizer
+
+
 from datetime import datetime
 
-# datetime object containing current date and time
-now = datetime.now()
-
-
-# Create the Gradio Template
-def respond(question, chat_history):
-    now = datetime.now()
-    dt_string = now.strftime("%d-%m-%Y-%H%M%S")
-    info = qabot.get_answer(question)
+def respond(prompt, **kwargs):
     
-    chat_history.append((question,info['answer']))
+    start = datetime.now()
+    dt_string = start.strftime("%d-%m-%Y-%H%M%S")
     
+    # get no of tokens in prompt
+    tokenizer = AutoTokenizer.from_pretrained("intfloat/e5-large-v2")
+    
+    tokens_prompt = len(tokenizer(prompt).input_ids)
+    # get answer form llm 
+    info = qabot.get_answer(prompt)
+    
+    # calculate inference time
+    end = datetime.now()
+    difference = end - start
+    
+    seconds = difference.total_seconds()
+
     # create the output file  
-    output_dict = {"question":question , "answer": info['answer']}
+    output_dict = {"question": prompt , 
+                   "answer": info['answer'], 
+                   "prompt_tokens": tokens_prompt,
+                   "source": info['source'],
+                   "vector_doc": info['vector_doc'],
+                   "inference_time_sec": seconds
+                   }
     
-    with open(path, "w+") as f:
-        json.dump(output_dict, f)
-    
-    return "", chat_history , info['vector_doc'], info['source']
+    return output_dict
 
 # COMMAND ----------
 
-print(respond("What is Unilever's revenue for 2022?"))
+print(respond("what happens if I lose my keys?"))
 
 # COMMAND ----------
 

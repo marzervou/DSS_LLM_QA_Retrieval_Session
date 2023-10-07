@@ -5,12 +5,17 @@
 
 # COMMAND ----------
 
+# MAGIC %run "./util/notebook-config"
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC **This notebook is not required if you want to run the OpenAI model**
 
 # COMMAND ----------
 
-# MAGIC %run "./util/notebook-config"
+if config['model_id'] == "openai":
+  raise "Notebook note required , Use this notebook to run on when using open LLM. change the config"
 
 # COMMAND ----------
 
@@ -18,7 +23,7 @@
 
 # COMMAND ----------
 
-! rm -rf /dbfs/$user/tgi/*
+# ! rm -rf /dbfs/$user/tgi/*
 
 # COMMAND ----------
 
@@ -28,11 +33,6 @@
 # MAGIC sh tmp.sh -y
 # MAGIC source "$HOME/.cargo/env"
 # MAGIC export tgi_commit='5ba53d44a18983a4de32d122f4cb46f4a17d9ef6'
-
-# COMMAND ----------
-
-# MAGIC %sh
-# MAGIC
 # MAGIC # install protoc
 # MAGIC PROTOC_ZIP=protoc-21.12-linux-x86_64.zip
 # MAGIC curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v21.12/$PROTOC_ZIP
@@ -44,7 +44,7 @@
 # MAGIC rm -rf  /local_disk0/tmp/text-generation-inference
 # MAGIC cd /local_disk0/tmp && git clone https://github.com/huggingface/text-generation-inference.git  
 # MAGIC cd /local_disk0/tmp/text-generation-inference 
-# MAGIC git fetch && git checkout ${tgi_commit} && make install
+# MAGIC  git fetch && git checkout ${tgi_commit} && make install
 
 # COMMAND ----------
 
@@ -74,7 +74,7 @@
 # COMMAND ----------
 
 # MAGIC %sh 
-# MAGIC FILE=/dbfs/$user/tgi/flash_attn-2.0.0.post1-cp310-cp310-linux_x86_64.whl
+# MAGIC FILE=/dbfs/$user/tgi/flash_attn-2.3.0-cp310-cp310-linux_x86_64.whl
 # MAGIC if test -f "$FILE"; then
 # MAGIC     echo "$FILE exists."
 # MAGIC else
@@ -110,10 +110,9 @@
 # COMMAND ----------
 
 # MAGIC %sh 
-# MAGIC
 # MAGIC FILE=/dbfs/$user/tgi/awq_inference_engine-0.0.0-cp310-cp310-linux_x86_64.whl
 # MAGIC if test -f "$FILE"; then
-# MAGIC      echo "$FILE exists."
+# MAGIC     echo "$FILE exists."
 # MAGIC else
 # MAGIC     export awq_commit='f084f40bd996f3cf3a0633c1ad7d9d476c318aaa'
 # MAGIC
@@ -131,23 +130,24 @@
 # MAGIC %sh 
 # MAGIC FILE=/dbfs/$user/tgi/EETQ-1.0.0b0-cp310-cp310-linux_x86_64.whl
 # MAGIC if test -f "$FILE"; then
-# MAGIC   echo "$FILE exists."
+# MAGIC     echo "$FILE exists."
 # MAGIC else
-# MAGIC   export eetq_commit='e44e3082d8e69917816a3d3d708af8fbc132e27a'
-# MAGIC   pip install packaging
-# MAGIC   rm -rf /local_disk0/tmp/eetq
-# MAGIC   cd /local_disk0/tmp && git clone https://github.com/NetEase-FuXi/EETQ.git eetq
+# MAGIC     export eetq_commit='e44e3082d8e69917816a3d3d708af8fbc132e27a'
+# MAGIC     pip install packaging
+# MAGIC     rm -rf /local_disk0/tmp/eetq
+# MAGIC     cd /local_disk0/tmp && git clone https://github.com/NetEase-FuXi/EETQ.git eetq
 # MAGIC
-# MAGIC   cd eetq && git fetch && git checkout $(eetq_commit)
-# MAGIC   git submodule update --init --recursive
-# MAGIC   cd eetq 
-# MAGIC   python setup.py build
-# MAGIC   python setup.py bdist_wheel
-# MAGIC   cp dist/EETQ-1.0.0b0-cp310-cp310-linux_x86_64.whl /dbfs/$user/tgi/EETQ-1.0.0b0-cp310-cp310-linux_x86_64.whl
+# MAGIC     cd eetq && git fetch && git checkout $(eetq_commit)
+# MAGIC     git submodule update --init --recursive
+# MAGIC     cd eetq 
+# MAGIC     python setup.py build
+# MAGIC     python setup.py bdist_wheel
+# MAGIC     cp dist/EETQ-1.0.0b0-cp310-cp310-linux_x86_64.whl /dbfs/$user/tgi/EETQ-1.0.0b0-cp310-cp310-linux_x86_64.whl
 # MAGIC fi
 
 # COMMAND ----------
 
+# ! ls /local_disk0/tmp/eetq/dist
 ! ls /dbfs/$user/tgi/
 
 # COMMAND ----------
@@ -156,11 +156,11 @@
 
 # COMMAND ----------
 
-! echo $CUDA_MEMORY_FRACTION
+dbutils.library.restartPython() 
 
 # COMMAND ----------
 
-dbutils.library.restartPython() 
+# MAGIC %run "./util/notebook-config"
 
 # COMMAND ----------
 
@@ -210,9 +210,14 @@ port = {port}
 # MAGIC source "$HOME/.cargo/env"
 # MAGIC
 # MAGIC if [ -z ${quantize} ]; 
-# MAGIC   then echo "quantize" && text-generation-launcher --model-id $model_id --port 8880 --trust-remote-code --sharded $sharded --max-input-length 2048 --max-total-tokens 4096 ;
+# MAGIC     then echo "quantize" && text-generation-launcher --model-id $model_id --port 8880 --trust-remote-code --sharded $sharded --max-input-length 2048 --max-total-tokens 4096 ;
 # MAGIC else text-generation-launcher --model-id $model_id --port 8880 --trust-remote-code --sharded $sharded --max-input-length 2048 --max-total-tokens 4096 --quantize $quantize --max-batch-prefill-tokens 4096  ;
 # MAGIC fi
+# MAGIC
+
+# COMMAND ----------
+
+! kill -9  $(ps aux | grep 'text-generation' | awk '{print $2}')
 
 # COMMAND ----------
 
