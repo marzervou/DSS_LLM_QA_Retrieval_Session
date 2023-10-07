@@ -1,5 +1,4 @@
 # Databricks notebook source
-# Databricks notebook source
 # MAGIC %pip install Jinja2==3.0.3 fastapi==0.100.0 uvicorn nest_asyncio databricks-cli gradio==3.37.0 nest_asyncio
 
 # COMMAND ----------
@@ -8,13 +7,15 @@ dbutils.library.restartPython()
 
 # COMMAND ----------
 
-# MAGIC %run ./utils/llm_libraries.py
+# MAGIC %run ./util/install-llm-libraries
 
 # COMMAND ----------
 
-# MAGIC %run ./utils/config.py
+# MAGIC %run ./util/notebook-config
 
 # COMMAND ----------
+
+import gradio as gr
 
 import re
 import time
@@ -24,24 +25,23 @@ from langchain.prompts import SystemMessagePromptTemplate, HumanMessagePromptTem
 from langchain.prompts.base import BasePromptTemplate
 from langchain.prompts import PromptTemplate
 
+from util.embeddings import load_vector_db
+from util.mptbot import HuggingFacePipelineLocal, TGILocalPipeline
+from util.qabot import *
+from langchain.chat_models import ChatOpenAI
+
+
+from langchain import LLMChain
+
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.embeddings import HuggingFaceEmbeddings,HuggingFaceInstructEmbeddings
 from langchain.vectorstores.faiss import FAISS
 
-from utils.embeddings import load_vector_db
-from utils.mptbot import HuggingFacePipelineLocal, TGILocalPipeline
-from utils.qabot import *
-from langchain.chat_models import ChatOpenAI
-from utils.app import DatabricksApp
-
-from langchain import LLMChain
-
-
 # COMMAND ----------
 
-from huggingface_hub import login
-access_token_read = dbutils.secrets.get(scope="hugging_phase", key="llama")
-login(token = access_token_read)
+# from huggingface_hub import login
+# access_token_read = dbutils.secrets.get(scope="hugging_phase", key="llama")
+# login(token = access_token_read)
 
 # COMMAND ----------
 
@@ -70,6 +70,12 @@ retriever = load_vector_db(config['embedding_model'],
 
 # COMMAND ----------
 
+# from huggingface_hub import login
+# access_token_read = dbutils.secrets.get(scope="hugging_phase", key="llama")
+# login(token = access_token_read)
+
+# COMMAND ----------
+
 # define system-level instructions
 system_message_prompt = SystemMessagePromptTemplate.from_template(config['template'])
 chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt])
@@ -85,51 +91,34 @@ qabot = QABot(llm, retriever, chat_prompt)
 
 # COMMAND ----------
 
-qabot.get_answer("What is Unilever's revenue in 2020?")
+question="what is Unilever's business model in 2012"
+x = qabot.get_answer(question) 
+x
 
 # COMMAND ----------
 
 import json
-from transformers import AutoTokenizer
-
-
 from datetime import datetime
 
-def respond(prompt, **kwargs):
-    
-    start = datetime.now()
-    dt_string = start.strftime("%d-%m-%Y-%H%M%S")
-    
-    # get no of tokens in prompt
-    tokenizer = AutoTokenizer.from_pretrained("intfloat/e5-large-v2")
-    
-    tokens_prompt = len(tokenizer(prompt).input_ids)
-    # get answer form llm 
-    info = qabot.get_answer(prompt)
-    
-    # calculate inference time
-    end = datetime.now()
-    difference = end - start
-    
-    seconds = difference.total_seconds()
+# datetime object containing current date and time
+now = datetime.now()
 
-    # create the output file  
-    output_dict = {"question": prompt , 
-                   "answer": info['answer'], 
-                   "prompt_tokens": tokens_prompt,
-                   "response_tokens": info['no_of_tokens'],
-                   "source": info['source'],
-                   "vector_doc": info['vector_doc'],
-                   "inference_time_sec": seconds
-                   }
+
+# Create the Gradio Template
+def respond(question, chat_history):
+    now = datetime.now()
+    dt_string = now.strftime("%d-%m-%Y-%H%M%S")
+    info = qabot.get_answer(question)
     
-    #write the file out
-    path = "/dbfs/FileStore/mz_poc/llm_responses/{}.json".format(dt_string)
+    chat_history.append((question,info['answer']))
+    
+    # create the output file  
+    output_dict = {"question":question , "answer": info['answer']}
+    
     with open(path, "w+") as f:
         json.dump(output_dict, f)
     
-    return output_dict
-
+    return "", chat_history , info['vector_doc'], info['source']
 
 # COMMAND ----------
 
@@ -143,10 +132,8 @@ app = Flask("llama2-13b-chat")
 
 @app.route('/', methods=['POST'])
 def serve_falcon_70b_instruct():
-    # question = request.args.get('question')
     resp = respond(**request.json)
     return jsonify(resp)
-
 
 
 # COMMAND ----------
@@ -163,6 +150,7 @@ cluster_id = '{ctx.clusterId}'
 port = {port}
 """)
 
+
 # COMMAND ----------
 
 app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
@@ -170,14 +158,3 @@ app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
 # COMMAND ----------
 
 !ps aux | grep 'python'
-
-# COMMAND ----------
-
-# kill the gradio process
-# ! kill -9  $(ps aux | grep 'databricks/python_shell/scripts/db_ipykernel_launcher.py' | awk '{print $2}')
-
-# COMMAND ----------
-
-
-
-# COMMAND ----------

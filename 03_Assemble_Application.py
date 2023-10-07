@@ -1,30 +1,6 @@
 # Databricks notebook source
-# MAGIC %md The purpose of this notebook is to define and persist the model to be used by the QA Bot accelerator.  This notebook is inspired from https://github.com/databricks-industry-solutions/diy-llm-qa-bot.
-
-# COMMAND ----------
-
-
-
-# COMMAND ----------
-
-# MAGIC %md ##Introduction
-# MAGIC
-# MAGIC With our documents indexed, we can now focus our attention on assembling the core application logic.  This logic will have us retrieve a document from our vector store based on a user-provided question.  That question along with the document, added to provide context, will then be used to assemble a prompt which will then be sent to a model in order to generate a response. </p>
-# MAGIC
-# MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/bot_application.png' width=900>
-# MAGIC
-# MAGIC </p>
-# MAGIC In this notebook, we'll first walk through these steps one at a time so that we can wrap our head around what all is taking place.  We will then repackage the logic as a class object which will allow us to more easily encapsulate our work.  We will persist that object as a model within MLflow which will assist us in deploying the model in the last notebook associated with this accelerator.
-
-# COMMAND ----------
-
 # DBTITLE 1,Install Required Libraries
 # MAGIC %run "./util/install-prep-libraries"
-
-# COMMAND ----------
-
-# DBTITLE 1,Optional : Load Ray Dashboard to show cluster Utilisation
-# MAGIC %run "./util/install_ray"
 
 # COMMAND ----------
 
@@ -75,14 +51,7 @@ question =   """ Anthropomorphism and the scope of their power?"""
 try:
   embeddings
 except:
-  print("*** Load Embedding Model ***")
-  if config['model_id'] == 'openai' :
-    embeddings = OpenAIEmbeddings(model=config['embedding_model'])
-  else:
-    if "instructor" in config['embedding_model']:
-      embeddings = HuggingFaceInstructEmbeddings(model_name= config['embedding_model'])
-    else:
-      embeddings = HuggingFaceEmbeddings(model_name= config['embedding_model'])
+  embeddings = HuggingFaceEmbeddings(model_name= config['embedding_model'])
 
 # load the documents in the vector store
 vector_store = FAISS.load_local(embeddings=embeddings, folder_path=config['vector_store_path'])
@@ -119,18 +88,11 @@ config['template'] = """<s><<SYS>>
 system_message_prompt = SystemMessagePromptTemplate.from_template(config['template'])
 chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt])
 
-
-if config['model_id']  == 'openai':
-
-  # define model to respond to prompt
-  llm = ChatOpenAI(model_name=config['openai_chat_model'], temperature=config['temperature'])
-
-else:
-  # define model to respond to prompt
-  llm = TGILocalPipeline.from_model_id(
-    model_id=config['model_id'],
-    model_kwargs =config['model_kwargs'],
-    pipeline_kwargs= config['pipeline_kwargs'])
+# define model to respond to prompt
+llm = TGILocalPipeline.from_model_id(
+  model_id=config['model_id'],
+  model_kwargs =config['model_kwargs'],
+  pipeline_kwargs= config['pipeline_kwargs'])
 
 # combine prompt and model into a unit of work (chain)
 qa_chain = LLMChain(
@@ -142,14 +104,6 @@ qa_chain = LLMChain(
 # MAGIC %md To actually trigger a response, we will loop through each of our docs from highest to lowest relevance and attempt to elicit a response.  Once we get a valid response, we'll stop.
 # MAGIC
 # MAGIC Please note, we aren't providing time-out handling or thoroughly validating the response from the model in this next cell.  We will want to make this logic more robust as we assemble our application class but for now we'll keep it simple to ensure the code is easy to read:
-
-# COMMAND ----------
-
-text = ""
-for x in range(0,n_documents,3):
-  for doc in docs[x:x+3]:
-    text += "\nParagraph: \n" + doc.page_content
-print(text)
 
 # COMMAND ----------
 
@@ -415,17 +369,6 @@ with mlflow.start_run(run_name = config['model_id']):
     }
     mlflow.log_table(table_dict,"eval.json")
     mlflow.end_run()
-
-# COMMAND ----------
-
-# MAGIC %md © 2023 Databricks, Inc. All rights reserved. The source in this notebook is provided subject to the Databricks License. All included or referenced third party libraries are subject to the licenses set forth below.
-# MAGIC
-# MAGIC | library                                | description             | license    | source                                              |
-# MAGIC |----------------------------------------|-------------------------|------------|-----------------------------------------------------|
-# MAGIC | langchain | Building applications with LLMs through composability | MIT  |   https://pypi.org/project/langchain/ |
-# MAGIC | tiktoken | Fast BPE tokeniser for use with OpenAI's models | MIT  |   https://pypi.org/project/tiktoken/ |
-# MAGIC | faiss-cpu | Library for efficient similarity search and clustering of dense vectors | MIT  |   https://pypi.org/project/faiss-cpu/ |
-# MAGIC | openai | Building applications with LLMs through composability | MIT  |   https://pypi.org/project/openai/ |
 
 # COMMAND ----------
 
