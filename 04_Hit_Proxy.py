@@ -4,7 +4,7 @@ import requests
 import json
 
 def request_llamav2_13b(question):
-    token = "dapi68f7b044a5644c2c75c2ebda6128624d"
+    token = "xxxxxxxxxxxxxxxx"
     url = 'https://adb-984752964297111.11.azuredatabricks.net/driver-proxy-api/o/0/0918-192555-elmkeq9x/7778'
     
     headers = {
