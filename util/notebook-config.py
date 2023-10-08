@@ -41,7 +41,7 @@ if "Llama-2" in config['model_id']:
 
 # DBTITLE 1,Set document path
 config['loc'] = f"/dbfs/FileStore/insurance_policy_doc/"
-config['vector_store_path'] = f"/dbfs/{username}/qabot_chatbot_summit/vector_store/{config['model_id']}/{config['use-case']}" # /dbfs/... is a local file system representation
+config['vector_store_path'] = f"/dbfs/Users/{username}/qabot_chatbot_summit/vector_store/{config['model_id']}/{config['use-case']}" # /dbfs/... is a local file system representation
 
 # COMMAND ----------
 

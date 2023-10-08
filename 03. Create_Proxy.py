@@ -72,7 +72,7 @@ retriever = load_vector_db(config['embedding_model'],
 system_message_prompt = SystemMessagePromptTemplate.from_template(config['template'])
 chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt])
 
-# define model to respond to prompt
+# define the model to respond to prompt
 llm = TGILocalPipeline.from_model_id(
     model_id=config['model_id'],
     model_kwargs =config['model_kwargs'],
@@ -83,12 +83,14 @@ qabot = QABot(llm, retriever, chat_prompt)
 
 # COMMAND ----------
 
-question="what is Unilever's business model in 2012"
+# DBTITLE 1,Let's see an example response
+question="what happens if I lose my keys?"
 x = qabot.get_answer(question) 
 x
 
 # COMMAND ----------
 
+# DBTITLE 1,Let's create our API
 import json
 from transformers import AutoTokenizer
 
@@ -145,7 +147,7 @@ def serve_falcon_70b_instruct():
 from dbruntime.databricks_repl_context import get_context
 ctx = get_context()
 
-port = "7777"
+port = "7778"
 driver_proxy_api = f"https://{ctx.browserHostName}/driver-proxy-api/o/0/{ctx.clusterId}/{port}"
 
 print(f"""
@@ -162,3 +164,7 @@ app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)
 # COMMAND ----------
 
 !ps aux | grep 'python'
+
+# COMMAND ----------
+
+

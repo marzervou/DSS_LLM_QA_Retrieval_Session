@@ -82,13 +82,11 @@ class QABot():
     docs = self.retriever.get_relevant_documents(retriever_addon + question)
 
     # for each doc ...
-
     for x in range(0,len(docs),3):
       text = ""
       print(x,x+3)
       for doc in docs[x:x+3]:
         text += "\nParagraph: \n" + doc.page_content
-    # print(text)
 
       # get key elements for doc
       # text = doc.page_content
@@ -100,7 +98,6 @@ class QABot():
       # get output from results
       generation = output.generations[0][0]
       answer = generation.text
-      print("answer:",answer)
       output_metadata = output.llm_output
 
       # assemble results if not no_answer
