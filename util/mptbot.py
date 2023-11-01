@@ -114,12 +114,7 @@ class TGILocalPipeline(LLM):
         
         if 'do_sample' not in self.pipeline_kwargs:
           self.pipeline_kwargs['do_sample'] = False
-        
-
-        # if 'num_return_sequences' not in self.pipeline_kwargs:
-        #   self.pipeline_kwargs['num_return_sequences'] = 1
-        # print("self.pipeline_kwargs:" ,self.pipeline_kwargs)
-        # print("Prompt" ,[prompt])
+      
 
         generator = self.pipeline.generate(prompt,
                             max_new_tokens = self.pipeline_kwargs['max_new_tokens'],

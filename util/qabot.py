@@ -6,7 +6,7 @@ import openai
 class QABot():
 
 
-  def __init__(self, llm, retriever, prompt ,club_chunks = 3):
+  def __init__(self, llm, retriever, prompt):
     self.llm = llm
     self.retriever = retriever
     self.prompt = prompt
@@ -84,7 +84,6 @@ class QABot():
     # for each doc ...
     for x in range(0,len(docs),3):
       text = ""
-      print(x,x+3)
       for doc in docs[x:x+3]:
         text += "\nParagraph: \n" + doc.page_content
 

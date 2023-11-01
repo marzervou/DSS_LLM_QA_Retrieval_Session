@@ -150,7 +150,7 @@ metadata_inputs = (
 
 # DBTITLE 1,Load Vector Store
 # identify embedding model that will generate embedding vectors
-embeddings = HuggingFaceEmbeddings(model_name= config['embedding_model'])
+embeddings = HuggingFaceEmbeddings(model_name=config['embedding_model'])
 
 # instantiate vector store object
 vector_store = FAISS.from_texts(

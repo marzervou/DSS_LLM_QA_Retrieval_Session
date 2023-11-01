@@ -43,19 +43,13 @@ from langchain.vectorstores.faiss import FAISS
 
 # COMMAND ----------
 
-def load_vector_db(embeddings_model = 'intfloat/e5-large-v2',
+def load_vector_db(embeddings_model = 'BAAI/bge-large-en',
                    config = None,
                    n_documents = 5):
   '''
   Function to retrieve the vector store created
   '''
-  if config['model_id'] == 'openai' :
-    embeddings = OpenAIEmbeddings(model=config['embedding_model'])
-  else:
-    if "instructor" in config['embedding_model']:
-      embeddings = HuggingFaceInstructEmbeddings(model_name= config['embedding_model'])
-    else:
-      embeddings = HuggingFaceEmbeddings(model_name= config['embedding_model'])
+  embeddings = HuggingFaceEmbeddings(model_name= config['embedding_model'])
   
   vector_store = FAISS.load_local(embeddings=embeddings, folder_path=config['vector_store_path'])
   retriever = vector_store.as_retriever(search_kwargs={'k': n_documents}) # configure retrieval mechanism
@@ -83,8 +77,11 @@ qabot = QABot(llm, retriever, chat_prompt)
 
 # COMMAND ----------
 
-# DBTITLE 1,Let's see an example response
 question="what happens if I lose my keys?"
+
+# COMMAND ----------
+
+# DBTITLE 1,Let's see an example response
 x = qabot.get_answer(question) 
 x
 
@@ -103,9 +100,10 @@ def respond(prompt, **kwargs):
     dt_string = start.strftime("%d-%m-%Y-%H%M%S")
     
     # get no of tokens in prompt
-    tokenizer = AutoTokenizer.from_pretrained("intfloat/e5-large-v2")
+    tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-large-en")
     
     tokens_prompt = len(tokenizer(prompt).input_ids)
+    
     # get answer form llm 
     info = qabot.get_answer(prompt)
     
@@ -137,7 +135,7 @@ from flask import Flask, jsonify, request
 app = Flask("llama2-13b-chat")
 
 @app.route('/', methods=['POST'])
-def serve_falcon_70b_instruct():
+def serve_llama2_13b_instruct():
     resp = respond(**request.json)
     return jsonify(resp)
 

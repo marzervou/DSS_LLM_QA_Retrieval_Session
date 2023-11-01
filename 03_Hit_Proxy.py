@@ -1,10 +1,14 @@
 # Databricks notebook source
+token = "dapi68f7b044a5644c2c75c2ebda6128624d"
+
+# COMMAND ----------
+
 # DBTITLE 1,Hit the API
 import requests
 import json
 
-def request_llamav2_13b(question):
-    token = "xxxxxxxxxxxxxxxx"
+def request_llamav2_13b(question, token):
+    token = token
     url = 'https://adb-984752964297111.11.azuredatabricks.net/driver-proxy-api/o/0/0918-192555-elmkeq9x/7778'
     
     headers = {
@@ -23,7 +27,7 @@ def request_llamav2_13b(question):
 
 import json
 
-json.loads(request_llamav2_13b("what are the regions covered by the policy?"))
+json.loads(request_llamav2_13b("what is the duration for the policy?", token=token))
 
 
 # COMMAND ----------
